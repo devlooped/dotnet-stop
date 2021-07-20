@@ -9,7 +9,7 @@
     <SignAssembly>false</SignAssembly>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
 
-    <Description>A dotnet global tool that gracefully stops processes by sending them SIGNINT (Ctrl+C) in a cross platform way.</Description>
+    <Description>A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.</Description>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
