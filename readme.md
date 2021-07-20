@@ -1,7 +1,7 @@
 ![Icon](https://raw.githubusercontent.com/devlooped/dotnet-stop/main/assets/img/icon.png) dotnet-stop
 ============
 
-[![Version](https://img.shields.io/nuget/v/dotnet-stop.svg?color=royalblue)](https://www.nuget.org/packages/dotnet-stop) [![Downloads](https://img.shields.io/nuget/dt/dotnet-stop.svg?color=green)](https://www.nuget.org/packages/dotnet-stop) [![License](https://img.shields.io/github/license/devlooped/dotnet-stop.svg?color=blue)](https://github.com/devlooped/dotnet-stop/blob/main/LICENSE) [![Build](https://github.com/devlooped/dotnet-stop/workflows/build/badge.svg?branch=main)](https://github.com/devlooped/dotnet-stop/actions)
+[![Version](https://img.shields.io/nuget/v/dotnet-stop.svg?color=royalblue)](https://www.nuget.org/packages/dotnet-stop) [![Downloads](https://img.shields.io/nuget/dt/dotnet-stop.svg?color=green)](https://www.nuget.org/packages/dotnet-stop) [![License](https://img.shields.io/github/license/devlooped/dotnet-stop.svg?color=blue)](https://github.com/devlooped/dotnet-stop/blob/main/license.txt) [![Build](https://github.com/devlooped/dotnet-stop/workflows/build/badge.svg?branch=main)](https://github.com/devlooped/dotnet-stop/actions)
 
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
