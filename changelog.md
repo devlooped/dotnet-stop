@@ -1,5 +1,9 @@
 
 
+## [v1.0.0](https://github.com/devlooped/dotnet-stop/tree/v1.0.0) (2021-07-20)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v0.1.0...v1.0.0)
+
 ## [v0.1.0](https://github.com/devlooped/dotnet-stop/tree/v0.1.0) (2021-07-20)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/76f763e690078a4ecd80fd482a7636fae3d68c36...v0.1.0)
