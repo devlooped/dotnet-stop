@@ -2,8 +2,8 @@
   "profiles": {
     "dotnet-stop": {
       "commandName": "Project",
-      //"commandLineArgs": "16512 -t 1"
-      "commandLineArgs": "-?"
+      "commandLineArgs": "28368"
+      //"commandLineArgs": "-?"
     }
   }
 }

@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <None Include="..\readme.md" PackagePath="readme.md" Pack="true" />
+    <None Include="Properties\*.*" />
   </ItemGroup>
 
 </Project>
