@@ -1,4 +1,4 @@
-![Icon](https://raw.githubusercontent.com/devlooped/dotnet-stop/main/src/icon.png) dotnet-stop
+![Icon](https://raw.githubusercontent.com/devlooped/dotnet-stop/main/assets/img/icon.png) dotnet-stop
 ============
 
 A dotnet global tool that gracefully stops processes by sending them SIGNINT (Ctrl+C) in a cross platform way.
