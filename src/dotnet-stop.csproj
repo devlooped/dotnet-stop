@@ -3,8 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
-    <!--<TargetFrameworks Condition="'$(BuildingInsideVisualStudio)' == 'true'">net5.0</TargetFrameworks>-->
-    <!--<TargetFramework>net5.0</TargetFramework>-->
 
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
@@ -21,16 +19,10 @@
     <RestoreSources Condition="Exists('C:\Code\kzu\nugetizer\bin\')">C:\Code\kzu\nugetizer\bin\;$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <PackageReference>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemDefinitionGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
-    <PackageReference Include="Spectre.Console" Version="0.40.0" PrivateAssets="all" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" PrivateAssets="all" />
+    <PackageReference Include="Spectre.Console" Version="0.40.0" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
   </ItemGroup>
 
   <ItemGroup>
