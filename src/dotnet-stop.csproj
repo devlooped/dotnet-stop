@@ -2,25 +2,35 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net5.0;netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(BuildingInsideVisualStudio)' == 'true'">net5.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <!--<TargetFrameworks Condition="'$(BuildingInsideVisualStudio)' == 'true'">net5.0</TargetFrameworks>-->
+    <!--<TargetFramework>net5.0</TargetFramework>-->
 
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
 
     <Description>A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.</Description>
-    <IsPackable>true</IsPackable>
+    <PackageId>dotnet-stop</PackageId>
     <PackAsTool>true</PackAsTool>
+    <PackBuildOutput>false</PackBuildOutput>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageTags>dotnet dotnet-tool</PackageTags>
     <PackageProjectUrl>https://clarius.org/dotnet-stop</PackageProjectUrl>
+
+    <RestoreSources Condition="Exists('C:\Code\kzu\nugetizer\bin\')">C:\Code\kzu\nugetizer\bin\;$(RestoreSources)</RestoreSources>
   </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemDefinitionGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="all" />
-    <PackageReference Include="Spectre.Console" Version="0.40.0" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
+    <PackageReference Include="Spectre.Console" Version="0.40.0" PrivateAssets="all" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

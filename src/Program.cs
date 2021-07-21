@@ -10,16 +10,17 @@ var command = new RootCommand("Sends the SIGINT (Ctrl+C) signal to a process to 
 {
     new Argument<int>("id", "ID of the process to stop."),
     new Option<int?>(new[] { "-t", "/t", "--timeout", "/timeout" }, "Optional timeout in milliseconds to wait for the process to exit."),
+    new Option<bool>(new[] { "-q", "--quiet", "/q", "/quiet" }, () => false, "Do not display any output."),
 };
 
 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-    command.Handler = CommandHandler.Create<int, int?>(StopWindowsProcess);
+    command.Handler = CommandHandler.Create<int, int?, bool>(StopWindowsProcess);
 else
-    command.Handler = CommandHandler.Create<int, int?>(StopUnixProcess);
+    command.Handler = CommandHandler.Create<int, int?, bool>(StopUnixProcess);
 
 return command.Invoke(args);
 
-static int StopUnixProcess(int id, int? timeout)
+static int StopUnixProcess(int id, int? timeout, bool quiet)
 {
     Process process;
     try
@@ -28,11 +29,15 @@ static int StopUnixProcess(int id, int? timeout)
     }
     catch (ArgumentException)
     {
-        AnsiConsole.MarkupLine($"[red]Process with id '{id}' not found[/]");
+        if (!quiet)
+            AnsiConsole.MarkupLine($"[red]Process with id '{id}' not found[/]");
+
         return -1;
     }
 
-    AnsiConsole.MarkupLine($"[yellow]Shutting down {process.Id}:{process.ProcessName}...[/]");
+    if (!quiet)
+        AnsiConsole.MarkupLine($"[yellow]Shutting down {process.ProcessName}:{process.Id}...[/]");
+
     Process.Start(new ProcessStartInfo("kill", "-s SIGINT " + process.Id) { UseShellExecute = true })?.WaitForExit();
 
     if (timeout != null)
@@ -40,7 +45,9 @@ static int StopUnixProcess(int id, int? timeout)
         if (process.WaitForExit((int)timeout))
             return 0;
 
-        AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.Id}:{process.ProcessName} to exit[/]");
+        if (!quiet)
+            AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.ProcessName}:{process.Id} to exit[/]");
+
         return -1;
     }
     else
@@ -50,7 +57,7 @@ static int StopUnixProcess(int id, int? timeout)
     }
 }
 
-static int StopWindowsProcess(int id, int? timeout)
+static int StopWindowsProcess(int id, int? timeout, bool quiet)
 {
     Process process;
     try
@@ -59,11 +66,15 @@ static int StopWindowsProcess(int id, int? timeout)
     }
     catch (ArgumentException)
     {
-        AnsiConsole.MarkupLine($"[red]Process with id '{id}' not found[/]");
+        if (!quiet)
+            AnsiConsole.MarkupLine($"[red]Process with id '{id}' not found[/]");
+
         return -1;
     }
 
-    AnsiConsole.MarkupLine($"[yellow]Shutting down {process.Id}:{process.ProcessName}...[/]");
+    if (!quiet)
+        AnsiConsole.MarkupLine($"[yellow]Shutting down {process.ProcessName}:{process.Id}...[/]");
+
     FreeConsole();
     AttachConsole((uint)id);
     GenerateConsoleCtrlEvent(0, 0);
@@ -73,7 +84,9 @@ static int StopWindowsProcess(int id, int? timeout)
         if (process.WaitForExit((int)timeout))
             return 0;
 
-        AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.Id}:{process.ProcessName} to exit[/]");
+        if (!quiet)
+            AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.ProcessName}:{process.Id} to exit[/]");
+
         return -1;
     }
     else

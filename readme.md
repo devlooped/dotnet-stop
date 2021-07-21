@@ -6,7 +6,7 @@
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
 ```
-dotnet stop
+dotnet-stop
   Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
 
 Usage:
@@ -17,6 +17,7 @@ Arguments:
 
 Options:
   -t, --timeout <timeout>  Optional timeout in milliseconds to wait for the process to exit.
+  -q, --quiet              Do not display any output. [default: False]
   --version                Show version information
   -?, -h, --help           Show help and usage information
 ```
