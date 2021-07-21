@@ -1,8 +1,8 @@
 
 
-## [v1.0.4](https://github.com/devlooped/dotnet-stop/tree/v1.0.4) (2021-07-21)
+## [v1.0.5](https://github.com/devlooped/dotnet-stop/tree/v1.0.5) (2021-07-21)
 
-[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.0.0...v1.0.4)
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.0.0...v1.0.5)
 
 :sparkles: Implemented enhancements:
 
