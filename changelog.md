@@ -1,5 +1,13 @@
 
 
+## [v1.0.3](https://github.com/devlooped/dotnet-stop/tree/v1.0.3) (2021-07-21)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.0.2...v1.0.3)
+
+:sparkles: Implemented enhancements:
+
+- Add option to silence output from tool [\#2](https://github.com/devlooped/dotnet-stop/issues/2)
+
 ## [v1.0.2](https://github.com/devlooped/dotnet-stop/tree/v1.0.2) (2021-07-20)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.0.1...v1.0.2)
