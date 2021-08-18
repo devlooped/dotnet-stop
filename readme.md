@@ -22,6 +22,9 @@ Options:
   -?, -h, --help           Show help and usage information
 ```
 
+If no timeout is provided, the tool will wait indefinitely for the target process to exit.
+Otherwise, the process will exit with a non-zero exit code if the target process didn't 
+exit within the specified timeout time.
 
 ## Sponsors
 
