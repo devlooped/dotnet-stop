@@ -15,8 +15,6 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageTags>dotnet dotnet-tool</PackageTags>
     <PackageProjectUrl>https://clarius.org/dotnet-stop</PackageProjectUrl>
-
-    <RestoreSources Condition="Exists('C:\Code\kzu\nugetizer\bin\')">C:\Code\kzu\nugetizer\bin\;$(RestoreSources)</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +25,7 @@
 
   <ItemGroup>
     <None Include="..\readme.md" PackagePath="readme.md" Pack="true" />
+    <None Include="icon.png" PackagePath="icon.png" Pack="true" />
     <None Include="Properties\*.*" />
   </ItemGroup>
 
