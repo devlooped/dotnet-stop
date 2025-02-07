@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
