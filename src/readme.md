@@ -1,3 +1,2 @@
 <!-- include ../readme.md#content -->
-<!-- Exclude from auto-expansion by devlooped/actions-include GH action -->
-<!-- exclude -->
+<!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
