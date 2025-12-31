@@ -7,6 +7,20 @@ dnx stop
 ```
 
 <!-- src/help.md -->
+```shell
+Usage: [arguments...] [options...] [-h|--help] [--version]
+
+Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
+
+Arguments:
+  [0] <int>    ID of the process to stop.
+
+Options:
+  -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
+  -q, --quiet             Do not display any output.
+```
+
+<!-- src/help.md -->
 
 If no timeout is provided, the tool will wait indefinitely for the target process to exit.
 Otherwise, the process will exit with a non-zero exit code if the target process didn't 
