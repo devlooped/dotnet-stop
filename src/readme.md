@@ -2,22 +2,11 @@
 <!-- #content -->
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
+``` bash
+dnx stop
 ```
-> dnx stop
-  Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
 
-Usage:
-  dotnet stop [options] <id>
-
-Arguments:
-  <id>  ID of the process to stop.
-
-Options:
-  -t, --timeout <timeout>  Optional timeout in milliseconds to wait for the process to exit.
-  -q, --quiet              Do not display any output. [default: False]
-  --version                Show version information
-  -?, -h, --help           Show help and usage information
-```
+<!-- src/help.md -->
 
 If no timeout is provided, the tool will wait indefinitely for the target process to exit.
 Otherwise, the process will exit with a non-zero exit code if the target process didn't 
