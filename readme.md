@@ -7,7 +7,7 @@
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
 ```
-dotnet-stop
+> dnx stop
   Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
 
 Usage:
