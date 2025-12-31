@@ -7,7 +7,7 @@
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
 ``` bash
-dnx stop
+dnx stop <processId> [--timeout <milliseconds>] [--quiet]
 ```
 
 <!-- include src/help.md -->
