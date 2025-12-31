@@ -18,11 +18,13 @@
 
     <!-- Allow running on whatever latest version users have. See https://docs.microsoft.com/en-us/dotnet/core/versions/selection#framework-dependent-apps-roll-forward -->
     <RollForward>LatestMajor</RollForward>
+
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ConsoleAppFramework" Version="5.7.13" PrivateAssets="all" />
     <PackageReference Include="Spectre.Console" Version="0.54.0" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21308.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,5 +32,11 @@
     <None Include="readme.md" PackagePath="readme.md" Pack="true" />
     <None Include="Properties\*.*" />
   </ItemGroup>
+
+  <Target Name="RenderHelp" AfterTargets="Build" Condition="$(NoHelp) != 'true' and $(DesignTimeBuild) != 'true' and $(TargetFramework) == 'net10.0'">
+    <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="help.md" />
+    <Exec Command="dotnet run -c:$(Configuration) --framework $(TargetFramework) --no-build --no-launch-profile -- --help &gt;&gt; help.md" StdOutEncoding="UTF-8" EnvironmentVariables="NO_COLOR=true" />
+    <WriteLinesToFile Lines="```" Overwrite="false" Encoding="UTF-8" File="help.md" />
+  </Target>
 
 </Project>
