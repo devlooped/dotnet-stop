@@ -9,8 +9,8 @@ using Spectre.Console;
 var command = new RootCommand("Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.")
 {
     new Argument<int>("id", "ID of the process to stop."),
-    new Option<int?>(new[] { "-t", "/t", "--timeout", "/timeout" }, "Optional timeout in milliseconds to wait for the process to exit."),
-    new Option<bool>(new[] { "-q", "--quiet", "/q", "/quiet" }, () => false, "Do not display any output."),
+    new Option<int?>(["-t", "/t", "--timeout", "/timeout"], "Optional timeout in milliseconds to wait for the process to exit."),
+    new Option<bool>(["-q", "--quiet", "/q", "/quiet"], () => false, "Do not display any output."),
 };
 
 if (Environment.OSVersion.Platform == PlatformID.Win32NT)

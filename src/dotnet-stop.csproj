@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
 
     <Description>A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.</Description>
-    <PackageId>dotnet-stop</PackageId>
+    <PackageId>stop</PackageId>
     <PackAsTool>true</PackAsTool>
     <PackBuildOutput>false</PackBuildOutput>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\readme.md" PackagePath="readme.md" Pack="true" />
     <None Include="icon.png" PackagePath="icon.png" Pack="true" />
+    <None Include="readme.md" PackagePath="readme.md" Pack="true" />
     <None Include="Properties\*.*" />
   </ItemGroup>
 
