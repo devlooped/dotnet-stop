@@ -1,4 +1,13 @@
+# Changelog
 
+## [v1.1.0](https://github.com/devlooped/dotnet-stop/tree/v1.1.0) (2025-12-31)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.0.5...v1.1.0)
+
+:sparkles: Implemented enhancements:
+
+- Allow running on whatever latest version users have. [\#15](https://github.com/devlooped/dotnet-stop/pull/15) (@kzu)
+- Rename to stop for easier usage with dnx stop [\#13](https://github.com/devlooped/dotnet-stop/pull/13) (@kzu)
 
 ## [v1.0.5](https://github.com/devlooped/dotnet-stop/tree/v1.0.5) (2021-07-21)
 
