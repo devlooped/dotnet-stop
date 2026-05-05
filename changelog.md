@@ -1,5 +1,9 @@
 # Changelog
 
+## [v2.0.0](https://github.com/devlooped/dotnet-stop/tree/v2.0.0) (2026-05-05)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.0-alpha...v2.0.0)
+
 ## [v2.0.0-alpha](https://github.com/devlooped/dotnet-stop/tree/v2.0.0-alpha) (2026-05-05)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.1.2...v2.0.0-alpha)
