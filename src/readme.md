@@ -2,6 +2,12 @@
 <!-- #content -->
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
+## Why
+
+PowerShell's `Stop-Process` (and the underlying `TerminateProcess` on Windows / `SIGKILL` on Unix) kills a process immediately — the target has no opportunity to clean up. This matters for apps that rely on graceful shutdown: flushing writes to disk, completing in-flight work, disposing resources, or honouring a `CancellationToken` in a .NET `IHost`/`IHostedService`.
+
+`dnx stop` sends **SIGINT** instead — the same signal as pressing Ctrl+C — which lets the process shut down on its own terms. On Windows this is non-trivial to do programmatically; it requires detaching from the current console, attaching to the target process's console group, and calling `GenerateConsoleCtrlEvent`. This tool handles all of that transparently, cross-platform.
+
 ``` bash
 dnx stop [<processId>] [--timeout <milliseconds>] [--quiet]
 ```
