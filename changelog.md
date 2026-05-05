@@ -1,5 +1,18 @@
 # Changelog
 
+## [v2.0.0-alpha](https://github.com/devlooped/dotnet-stop/tree/v2.0.0-alpha) (2026-05-05)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.1.2...v2.0.0-alpha)
+
+:sparkles: Implemented enhancements:
+
+- Add hybrid AOT tool publishing [\#32](https://github.com/devlooped/dotnet-stop/pull/32) (@kzu)
+- Support piping process IDs via standard input [\#27](https://github.com/devlooped/dotnet-stop/pull/27) (@kzu)
+
+:twisted_rightwards_arrows: Merged:
+
+- Add Why section to readme explaining SIGKILL vs SIGINT [\#30](https://github.com/devlooped/dotnet-stop/pull/30) (@kzu)
+
 ## [v1.1.2](https://github.com/devlooped/dotnet-stop/tree/v1.1.2) (2025-12-31)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v1.1.1...v1.1.2)
