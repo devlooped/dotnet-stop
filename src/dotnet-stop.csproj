@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
 
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
@@ -22,6 +22,11 @@
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(HybridToolPackage)' == 'true'">
+    <ToolPackageRuntimeIdentifiers>win-x64;linux-x64;osx-arm64;any</ToolPackageRuntimeIdentifiers>
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ConsoleAppFramework" Version="5.7.13" PrivateAssets="all" />
     <PackageReference Include="Spectre.Console" Version="0.54.0" />
@@ -33,10 +38,10 @@
     <None Include="Properties\*.*" />
   </ItemGroup>
 
-  <Target Name="RenderHelp" AfterTargets="Build" Condition="$(NoHelp) != 'true' and $(DesignTimeBuild) != 'true' and $(TargetFramework) == 'net10.0'">
-    <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="help.md" />
-    <Exec Command="dotnet run -c:$(Configuration) --framework $(TargetFramework) --no-build --no-launch-profile -- --help &gt;&gt; help.md" StdOutEncoding="UTF-8" EnvironmentVariables="NO_COLOR=true" />
-    <WriteLinesToFile Lines="```" Overwrite="false" Encoding="UTF-8" File="help.md" />
+  <Target Name="RenderHelp" AfterTargets="Build" Condition="$(NoHelp) != 'true' and $(DesignTimeBuild) != 'true' and '$(PublishAot)' != 'true' and '$(RuntimeIdentifier)' == ''">
+    <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="$(MSBuildProjectDirectory)\help.md" />
+    <Exec Command="dotnet &quot;$(TargetPath)&quot; --help &gt;&gt; &quot;$(MSBuildProjectDirectory)\help.md&quot;" StdOutEncoding="UTF-8" EnvironmentVariables="NO_COLOR=true" />
+    <WriteLinesToFile Lines="```" Overwrite="false" Encoding="UTF-8" File="$(MSBuildProjectDirectory)\help.md" />
   </Target>
 
 </Project>
