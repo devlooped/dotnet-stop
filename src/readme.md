@@ -3,7 +3,7 @@
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
 ``` bash
-dnx stop <processId> [--timeout <milliseconds>] [--quiet]
+dnx stop [<processId>] [--timeout <milliseconds>] [--quiet]
 ```
 
 <!-- src/help.md -->
@@ -13,7 +13,7 @@ Usage: [arguments...] [options...] [-h|--help] [--version]
 Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
 
 Arguments:
-  [0] <int>    ID of the process to stop.
+  [0] <int?>    ID of the process to stop. When omitted, reads process IDs from standard input.
 
 Options:
   -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
@@ -25,6 +25,25 @@ Options:
 If no timeout is provided, the tool will wait indefinitely for the target process to exit.
 Otherwise, the process will exit with a non-zero exit code if the target process didn't 
 exit within the specified timeout time.
+
+## Piping from PowerShell
+
+When no process ID is given, `dnx stop` reads process IDs from standard input. This allows 
+piping directly from PowerShell's `Get-Process`:
+
+```powershell
+# Stop all processes named 'foo'
+Get-Process -Name foo | dnx stop
+
+# Stop multiple processes by name
+Get-Process -Name foo, bar | dnx stop
+```
+
+You can also pipe just the IDs:
+
+```powershell
+Get-Process -Name foo | Select-Object -ExpandProperty Id | dnx stop
+```
 
 <!-- #content -->
 <!-- ../readme.md#content -->
