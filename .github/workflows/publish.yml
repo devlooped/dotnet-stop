@@ -10,16 +10,59 @@ on:
 env:
   DOTNET_NOLOGO: true
   Configuration: Release
-  PackOnBuild: true
-  GeneratePackageOnBuild: true
   VersionLabel: ${{ github.ref }}
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
   MSBUILDTERMINALLOGGER: auto
   SLEET_FEED_URL: https://api.nuget.org/v3/index.json
-      
+
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
+  native-aot:
+    name: native-aot-${{ matrix.rid }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-latest
+            rid: osx-arm64
+    steps:
+      - name: 🤘 checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙ dotnet
+        uses: devlooped/actions-dotnet-env@v1
+
+      - name: 📦 pack
+        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -r ${{ matrix.rid }} -p:HybridToolPackage=true -bl:"pack-${{ matrix.rid }}.binlog"
+
+      - name: 📤 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.rid }}
+          path: bin/*.${{ matrix.rid }}.*.nupkg
+          if-no-files-found: error
+
+      - name: 🐛 logs
+        uses: actions/upload-artifact@v4
+        if: runner.debug && always()
+        with:
+          name: logs-${{ matrix.rid }}
+          path: '*.binlog'
+
   publish:
+    needs: native-aot
     runs-on: ${{ vars.PUBLISH_AGENT || 'ubuntu-latest' }}
+    env:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      SLEET_CONNECTION: ${{ secrets.SLEET_CONNECTION }}
     steps:
       - name: 🤘 checkout
         uses: actions/checkout@v4
@@ -34,27 +77,71 @@ jobs:
         run: dotnet build -m:1 -bl:build.binlog
 
       - name: 🧪 test
-        shell: pwsh
         run: dnx --yes retest -- --no-build
+
+      - name: 📦 pointer
+        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -p:HybridToolPackage=true -bl:pointer-pack.binlog
+
+      - name: 📦 fallback
+        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -r any -p:HybridToolPackage=true -p:PublishAot=false -bl:any-pack.binlog
+
+      - name: 📥 packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: bin
+          merge-multiple: true
 
       - name: 🐛 logs
         uses: actions/upload-artifact@v4
         if: runner.debug && always()
         with:
-          name: logs
+          name: logs-publish
           path: '*.binlog'
 
       - name: 🚀 nuget
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         if: ${{ env.NUGET_API_KEY != '' && github.event.action != 'prereleased' }}
-        working-directory: bin
-        run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}} --skip-duplicate
+        run: |
+          $packages = @(Get-ChildItem bin -Filter *.nupkg | Where-Object Name -NotLike '*.symbols.nupkg' | Sort-Object Name)
+          $runtimePackagePattern = '^stop\.(win-x64|linux-x64|osx-arm64|any)\..+\.nupkg$'
+          $runtimePackages = @($packages | Where-Object Name -Match $runtimePackagePattern)
+          $pointerPackages = @($packages | Where-Object Name -NotMatch $runtimePackagePattern)
+
+          if ($runtimePackages.Count -eq 0) { throw 'No RID-specific or fallback packages found.' }
+          if ($pointerPackages.Count -eq 0) { throw 'No top-level pointer package found.' }
+
+          foreach ($package in $runtimePackages) {
+            dotnet nuget push $package.FullName -s https://api.nuget.org/v3/index.json -k $env:NUGET_API_KEY --skip-duplicate
+          }
+
+          foreach ($package in $pointerPackages) {
+            dotnet nuget push $package.FullName -s https://api.nuget.org/v3/index.json -k $env:NUGET_API_KEY --skip-duplicate
+          }
 
       - name: 🚀 sleet
-        env:
-          SLEET_CONNECTION: ${{ secrets.SLEET_CONNECTION }}
         if: env.SLEET_CONNECTION != ''
         run: |
-          dotnet tool update sleet -g --allow-downgrade --version $(curl -s --compressed ${{ vars.SLEET_FEED_URL }} | jq '.["sleet:version"]' -r)        
-          sleet push bin --config none -f --verbose -p "SLEET_FEED_CONTAINER=nuget" -p "SLEET_FEED_CONNECTIONSTRING=${{ secrets.SLEET_CONNECTION }}" -p "SLEET_FEED_TYPE=azure" || echo "No packages found"
+          $packages = @(Get-ChildItem bin -Filter *.nupkg | Where-Object Name -NotLike '*.symbols.nupkg' | Sort-Object Name)
+          $runtimePackagePattern = '^stop\.(win-x64|linux-x64|osx-arm64|any)\..+\.nupkg$'
+          $runtimePackages = @($packages | Where-Object Name -Match $runtimePackagePattern)
+          $pointerPackages = @($packages | Where-Object Name -NotMatch $runtimePackagePattern)
+
+          if ($runtimePackages.Count -eq 0) { throw 'No RID-specific or fallback packages found.' }
+          if ($pointerPackages.Count -eq 0) { throw 'No top-level pointer package found.' }
+
+          $runtimePath = Join-Path $env:RUNNER_TEMP runtime-packages
+          $pointerPath = Join-Path $env:RUNNER_TEMP pointer-package
+          New-Item -ItemType Directory -Force -Path $runtimePath, $pointerPath | Out-Null
+
+          Copy-Item -Path $runtimePackages.FullName -Destination $runtimePath
+          Copy-Item -Path $pointerPackages.FullName -Destination $pointerPath
+
+          $sleetVersion = (Invoke-RestMethod -Uri $env:SLEET_FEED_URL).'sleet:version'
+          if ($sleetVersion) {
+            dotnet tool update sleet -g --allow-downgrade --version $sleetVersion
+          } else {
+            dotnet tool update sleet -g --allow-downgrade
+          }
+
+          sleet push $runtimePath --config none -f --verbose -p "SLEET_FEED_CONTAINER=nuget" -p "SLEET_FEED_CONNECTIONSTRING=$env:SLEET_CONNECTION" -p "SLEET_FEED_TYPE=azure"
+          sleet push $pointerPath --config none -f --verbose -p "SLEET_FEED_CONTAINER=nuget" -p "SLEET_FEED_CONNECTIONSTRING=$env:SLEET_CONNECTION" -p "SLEET_FEED_TYPE=azure"
