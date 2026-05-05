@@ -4,7 +4,7 @@ Usage: [arguments...] [options...] [-h|--help] [--version]
 Sends the SIGINT (Ctrl+C) signal to a process to gracefully stop it.
 
 Arguments:
-  [0] <int>    ID of the process to stop.
+  [0] <int?>    ID of the process to stop. When omitted, reads process IDs from standard input.
 
 Options:
   -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
