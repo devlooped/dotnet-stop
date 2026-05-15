@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.0.1-beta](https://github.com/devlooped/dotnet-stop/tree/v2.0.1-beta) (2026-05-15)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.0...v2.0.1-beta)
+
+:sparkles: Implemented enhancements:
+
+- Add support for more RIDs and simplify packaging logic [\#36](https://github.com/devlooped/dotnet-stop/pull/36) (@kzu)
+
+:twisted_rightwards_arrows: Merged:
+
+- Strip symbols when publishing AOT [\#35](https://github.com/devlooped/dotnet-stop/pull/35) (@kzu)
+
 ## [v2.0.0](https://github.com/devlooped/dotnet-stop/tree/v2.0.0) (2026-05-05)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.0-alpha...v2.0.0)
