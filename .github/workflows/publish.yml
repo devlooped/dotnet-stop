@@ -92,6 +92,14 @@ jobs:
       - name: 📦 fallback
         run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -r any -bl:any-pack.binlog
 
+      - name: 📤 package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-any
+          path: bin/*.nupkg
+          retention-days: 30
+          if-no-files-found: error
+
       - name: 📥 packages
         uses: actions/download-artifact@v4
         with:
