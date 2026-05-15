@@ -25,6 +25,7 @@
   <PropertyGroup Condition="'$(HybridToolPackage)' == 'true'">
     <ToolPackageRuntimeIdentifiers>win-x64;linux-x64;osx-arm64;any</ToolPackageRuntimeIdentifiers>
     <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
   </PropertyGroup>
 
   <ItemGroup>
