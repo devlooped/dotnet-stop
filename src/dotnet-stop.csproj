@@ -7,6 +7,7 @@
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
 
     <Description>A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.</Description>
     <PackageId>stop</PackageId>
@@ -17,15 +18,18 @@
     <PackageProjectUrl>https://clarius.org/dotnet-stop</PackageProjectUrl>
 
     <!-- Allow running on whatever latest version users have. See https://docs.microsoft.com/en-us/dotnet/core/versions/selection#framework-dependent-apps-roll-forward -->
+    <!-- Useful for RID=any -->
     <RollForward>LatestMajor</RollForward>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64;any</RuntimeIdentifiers>
 
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(HybridToolPackage)' == 'true'">
-    <ToolPackageRuntimeIdentifiers>win-x64;linux-x64;osx-arm64;any</ToolPackageRuntimeIdentifiers>
     <PublishAot>true</PublishAot>
     <StripSymbols>true</StripSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'any'">
+    <PublishAot>false</PublishAot>
+    <PublishSelfContained>true</PublishSelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
