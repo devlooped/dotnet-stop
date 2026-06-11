@@ -12,8 +12,12 @@ ConsoleApp.Run(args, Stop);
 /// <param name="id">ID of the process to stop. When omitted, reads process IDs from standard input.</param>
 /// <param name="timeout">-t, Optional timeout in milliseconds to wait for the process to exit.</param>
 /// <param name="quiet">-q, Do not display any output.</param>
-static int Stop([Argument] int? id = null, [HideDefaultValue] int? timeout = default, bool quiet = false)
+/// <param name="debug">-d, Debug the process stopping operation.</param>
+static int Stop([Argument] int? id = null, [HideDefaultValue] int? timeout = default, bool quiet = false, bool debug = false)
 {
+    if (debug)
+        Debugger.Launch();
+
     if (id == null)
     {
         if (!Console.IsInputRedirected)
