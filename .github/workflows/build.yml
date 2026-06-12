@@ -69,7 +69,9 @@ jobs:
         uses: devlooped/actions-dotnet-env@v1
 
       - name: 🙏 build
-        run: dotnet build -m:1 -bl:build.binlog
+        run: |
+          dotnet build -m:1 -bl:build.binlog -p:RuntimeIdentifiers=any
+          dotnet build -m:1 -bl:build.binlog -p:RuntimeIdentifiers=any -r any
 
       - name: 🧪 test
         shell: pwsh
