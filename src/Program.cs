@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using ConsoleAppFramework;
+using Devlooped;
 using Spectre.Console;
 
 ConsoleApp.Run(args, Stop);
@@ -43,18 +44,18 @@ static int Stop([Argument] int? id = null, [HideDefaultValue] int? timeout = def
 
         var anyFailure = false;
         foreach (var pid in pids)
-            if (StopProcess(pid, timeout, quiet) != 0)
+            if (StopProcess(pid, timeout, quiet, debug) != 0)
                 anyFailure = true;
 
         return anyFailure ? -1 : 0;
     }
 
-    return StopProcess(id.Value, timeout, quiet);
+    return StopProcess(id.Value, timeout, quiet, debug);
 }
 
-static int StopProcess(int id, int? timeout, bool quiet) =>
+static int StopProcess(int id, int? timeout, bool quiet, bool debug) =>
     Environment.OSVersion.Platform == PlatformID.Win32NT
-        ? StopWindowsProcess(id, timeout, quiet)
+        ? StopWindowsProcess(id, timeout, quiet, debug)
         : StopUnixProcess(id, timeout, quiet);
 
 // Parses process IDs from stdin, supporting:
@@ -140,7 +141,7 @@ static int StopUnixProcess(int id, int? timeout, bool quiet)
     }
 }
 
-static int StopWindowsProcess(int id, int? timeout, bool quiet)
+static int StopWindowsProcess(int id, int? timeout, bool quiet, bool debug)
 {
     Process process;
     try
@@ -158,9 +159,43 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet)
     if (!quiet)
         AnsiConsole.MarkupLine($"[yellow]Shutting down {process.ProcessName}:{process.Id}...[/]");
 
-    FreeConsole();
-    AttachConsole((uint)id);
-    GenerateConsoleCtrlEvent(0, 0);
+    NativeMethods.FreeConsole();
+    var hasConsole = NativeMethods.AttachConsole((uint)id);
+
+    if (debug)
+        AnsiConsole.MarkupLine($"[grey]AttachConsole({id}) = {hasConsole}[/]");
+
+    if (hasConsole)
+    {
+        if (debug)
+            AnsiConsole.MarkupLine("[grey]Using console (Ctrl+C) shutdown path[/]");
+
+        NativeMethods.SetConsoleCtrlHandler(null, true);
+        var ctrlSent = NativeMethods.GenerateConsoleCtrlEvent(NativeMethods.CtrlCEvent, 0);
+
+        if (debug)
+            AnsiConsole.MarkupLine($"[grey]GenerateConsoleCtrlEvent = {ctrlSent}[/]");
+
+        NativeMethods.FreeConsole();
+        NativeMethods.SetConsoleCtrlHandler(null, false);
+    }
+    else
+    {
+        if (debug)
+            AnsiConsole.MarkupLine("[grey]Using GUI (WM_CLOSE) shutdown path[/]");
+
+        if (!SendCloseToGuiProcess(process, debug))
+        {
+            NativeMethods.AttachConsole(NativeMethods.AttachParentProcess);
+
+            if (!quiet)
+                AnsiConsole.MarkupLine($"[red]No closeable windows found for process {process.ProcessName}:{process.Id}[/]");
+
+            return -1;
+        }
+    }
+
+    NativeMethods.AttachConsole(NativeMethods.AttachParentProcess);
 
     if (timeout != null)
     {
@@ -179,9 +214,81 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet)
     }
 }
 
-[DllImport("kernel32.dll")]
-static extern bool GenerateConsoleCtrlEvent(uint dwCtrlEvent, uint dwProcessGroupId);
-[DllImport("kernel32.dll", SetLastError = true)]
-static extern bool AttachConsole(uint dwProcessId);
-[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
-static extern bool FreeConsole();
+static bool SendCloseToGuiProcess(Process process, bool debug)
+{
+    if (process.MainWindowHandle != IntPtr.Zero && process.CloseMainWindow())
+    {
+        if (debug)
+            AnsiConsole.MarkupLine($"[grey]CloseMainWindow succeeded for 0x{process.MainWindowHandle:X}[/]");
+
+        process.Refresh();
+        if (process.HasExited)
+            return true;
+    }
+
+    var state = new GuiCloseState((uint)process.Id);
+    var handle = GCHandle.Alloc(state);
+
+    try
+    {
+        if (process.MainWindowHandle != IntPtr.Zero)
+            state.Windows.Add(process.MainWindowHandle);
+
+        var statePtr = GCHandle.ToIntPtr(handle);
+        NativeMethods.EnumWindows(EnumWindowsByPidCallback, statePtr);
+        NativeMethods.EnumWindows(EnumHostedParentCallback, statePtr);
+
+        if (state.Windows.Count == 0)
+            return false;
+
+        var posted = 0;
+        foreach (var hWnd in state.Windows)
+        {
+            if (NativeMethods.PostMessage(hWnd, NativeMethods.WmClose, IntPtr.Zero, IntPtr.Zero))
+                posted++;
+            else if (debug)
+                AnsiConsole.MarkupLine($"[grey]PostMessage WM_CLOSE failed for 0x{hWnd:X} (error {Marshal.GetLastWin32Error()})[/]");
+        }
+
+        if (debug)
+            AnsiConsole.MarkupLine($"[grey]Posted WM_CLOSE to {posted} of {state.Windows.Count} window(s)[/]");
+
+        return posted > 0;
+    }
+    finally
+    {
+        handle.Free();
+    }
+}
+
+static bool EnumWindowsByPidCallback(IntPtr hWnd, IntPtr lParam)
+{
+    var state = (GuiCloseState)GCHandle.FromIntPtr(lParam).Target!;
+    NativeMethods.GetWindowThreadProcessId(hWnd, out var pid);
+    if (pid == state.TargetPid)
+        state.Windows.Add(hWnd);
+    return true;
+}
+
+static bool EnumHostedParentCallback(IntPtr hWnd, IntPtr lParam)
+{
+    var state = (GuiCloseState)GCHandle.FromIntPtr(lParam).Target!;
+    NativeMethods.EnumChildWindows(hWnd, EnumChildForHostedCallback, lParam);
+    return true;
+}
+
+static bool EnumChildForHostedCallback(IntPtr hWnd, IntPtr lParam)
+{
+    var state = (GuiCloseState)GCHandle.FromIntPtr(lParam).Target!;
+    NativeMethods.GetWindowThreadProcessId(hWnd, out var pid);
+    if (pid != state.TargetPid)
+        return true;
+
+    state.Windows.Add(hWnd);
+
+    var parent = NativeMethods.GetAncestor(hWnd, NativeMethods.GaRoot);
+    if (parent != IntPtr.Zero)
+        state.Windows.Add(parent);
+
+    return true;
+}
