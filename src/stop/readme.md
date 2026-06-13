@@ -12,7 +12,7 @@ PowerShell's `Stop-Process` (and the underlying `TerminateProcess` on Windows / 
 dnx stop [<processId>] [--timeout <milliseconds>] [--quiet]
 ```
 
-<!-- src/help.md -->
+<!-- src/stop/help.md -->
 ```shell
 Usage: [arguments...] [options...] [-h|--help] [--version]
 
@@ -27,7 +27,7 @@ Options:
   -d, --debug             Debug the process stopping operation.
 ```
 
-<!-- src/help.md -->
+<!-- src/stop/help.md -->
 
 If no timeout is provided, the tool will wait indefinitely for the target process to exit.
 Otherwise, the process will exit with a non-zero exit code if the target process didn't 

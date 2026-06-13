@@ -71,7 +71,7 @@ jobs:
       - name: 🙏 build
         run: |
           dotnet build -m:1 -bl:build.binlog -p:RuntimeIdentifiers=any
-          dotnet build src/dotnet-stop.csproj -bl:runtime.binlog -p:RuntimeIdentifiers=any -r any
+          dotnet build src/stop/stop.csproj -bl:runtime.binlog -p:RuntimeIdentifiers=any -r any
 
       - name: 🧪 test
         shell: pwsh

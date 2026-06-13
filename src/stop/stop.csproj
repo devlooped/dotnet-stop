@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
 
+    <AssemblyName>dotnet-stop</AssemblyName>
     <RootNamespace>Devlooped</RootNamespace>
     <SignAssembly>false</SignAssembly>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
@@ -36,10 +37,47 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="icon.png" PackagePath="icon.png" Pack="true" />
     <None Include="readme.md" PackagePath="readme.md" Pack="true" />
     <None Include="Properties\*.*" />
   </ItemGroup>
+
+  <Target Name="BundleStoprForBuild"
+          AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\stopr\stopr.csproj"
+             Targets="Build"
+             Properties="Configuration=$(Configuration)" />
+
+    <ItemGroup>
+      <_StoprBuildOutput Include="$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)\stopr.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_StoprBuildOutput)"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)')" />
+  </Target>
+
+  <Target Name="BundleStoprForPack"
+          AfterTargets="Publish"
+          Condition="'$(PackAsTool)' == 'true' and '$(RuntimeIdentifier)' != ''">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\stopr\stopr.csproj"
+             Targets="Publish"
+             Properties="Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier);PublishAot=$(PublishAot);SelfContained=$(SelfContained)" />
+
+    <PropertyGroup>
+      <_StoprPublishDir>$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\publish\</_StoprPublishDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_StoprFiles Include="$(_StoprPublishDir)**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_StoprFiles)"
+          DestinationFiles="@(_StoprFiles->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(_StoprPublishDir)')" />
+  </Target>
 
   <Target Name="RenderHelp" AfterTargets="Build" Condition="$(NoHelp) != 'true' and $(DesignTimeBuild) != 'true' and '$(PublishAot)' != 'true' and '$(RuntimeIdentifier)' == ''">
     <WriteLinesToFile Lines="```shell" Overwrite="true" Encoding="UTF-8" File="$(MSBuildProjectDirectory)\help.md" />
