@@ -47,7 +47,7 @@ jobs:
         uses: devlooped/actions-dotnet-env@v1
 
       - name: 📦 pack
-        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -r ${{ matrix.rid }} -bl:"pack-${{ matrix.rid }}.binlog"
+        run: dotnet pack src/stop/stop.csproj -c $env:Configuration -r ${{ matrix.rid }} -bl:"pack-${{ matrix.rid }}.binlog"
 
       - name: 📤 package
         uses: actions/upload-artifact@v4
@@ -87,10 +87,10 @@ jobs:
         run: dnx --yes retest -- --no-build
 
       - name: 📦 pointer
-        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -bl:pointer-pack.binlog
+        run: dotnet pack src/stop/stop.csproj -c $env:Configuration -bl:pointer-pack.binlog
 
       - name: 📦 fallback
-        run: dotnet pack src/dotnet-stop.csproj -c $env:Configuration -r any -bl:any-pack.binlog
+        run: dotnet pack src/stop/stop.csproj -c $env:Configuration -r any -bl:any-pack.binlog
 
       - name: 📤 package
         uses: actions/upload-artifact@v4

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using ConsoleAppFramework;
@@ -159,43 +160,28 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet, bool debug)
     if (!quiet)
         AnsiConsole.MarkupLine($"[yellow]Shutting down {process.ProcessName}:{process.Id}...[/]");
 
-    NativeMethods.FreeConsole();
-    var hasConsole = NativeMethods.AttachConsole((uint)id);
+    var stoprExit = RunStopr(id, debug);
 
     if (debug)
-        AnsiConsole.MarkupLine($"[grey]AttachConsole({id}) = {hasConsole}[/]");
+        AnsiConsole.MarkupLine($"[grey]stopr exit code = {stoprExit}[/]");
 
-    if (hasConsole)
-    {
-        if (debug)
-            AnsiConsole.MarkupLine("[grey]Using console (Ctrl+C) shutdown path[/]");
-
-        NativeMethods.SetConsoleCtrlHandler(null, true);
-        var ctrlSent = NativeMethods.GenerateConsoleCtrlEvent(NativeMethods.CtrlCEvent, 0);
-
-        if (debug)
-            AnsiConsole.MarkupLine($"[grey]GenerateConsoleCtrlEvent = {ctrlSent}[/]");
-
-        NativeMethods.FreeConsole();
-        NativeMethods.SetConsoleCtrlHandler(null, false);
-    }
-    else
+    if (stoprExit != 0)
     {
         if (debug)
             AnsiConsole.MarkupLine("[grey]Using GUI (WM_CLOSE) shutdown path[/]");
 
         if (!SendCloseToGuiProcess(process, debug))
         {
-            NativeMethods.AttachConsole(NativeMethods.AttachParentProcess);
-
             if (!quiet)
                 AnsiConsole.MarkupLine($"[red]No closeable windows found for process {process.ProcessName}:{process.Id}[/]");
 
             return -1;
         }
     }
-
-    NativeMethods.AttachConsole(NativeMethods.AttachParentProcess);
+    else if (debug)
+    {
+        AnsiConsole.MarkupLine("[grey]Using console (Ctrl+C) shutdown path via stopr[/]");
+    }
 
     if (timeout != null)
     {
@@ -212,6 +198,48 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet, bool debug)
         process.WaitForExit();
         return 0;
     }
+}
+
+static int RunStopr(int pid, bool debug)
+{
+    try
+    {
+        using var stopr = Process.Start(CreateStoprStartInfo(pid));
+        if (stopr == null)
+            return -1;
+
+        stopr.WaitForExit();
+        return stopr.ExitCode;
+    }
+    catch (Exception ex)
+    {
+        if (debug)
+            AnsiConsole.MarkupLine($"[grey]stopr failed: {ex.Message}[/]");
+
+        return -1;
+    }
+}
+
+static ProcessStartInfo CreateStoprStartInfo(int pid)
+{
+    var dir = AppContext.BaseDirectory;
+    var stoprExe = Path.Combine(dir, OperatingSystem.IsWindows() ? "stopr.exe" : "stopr");
+    if (File.Exists(stoprExe))
+    {
+        return new ProcessStartInfo(stoprExe, pid.ToString())
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+    }
+
+    var stoprDll = Path.Combine(dir, "stopr.dll");
+    var host = Environment.ProcessPath ?? "dotnet";
+    return new ProcessStartInfo(host, $"exec \"{stoprDll}\" {pid}")
+    {
+        UseShellExecute = false,
+        CreateNoWindow = true,
+    };
 }
 
 static bool SendCloseToGuiProcess(Process process, bool debug)
