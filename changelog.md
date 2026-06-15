@@ -1,5 +1,16 @@
 # Changelog
 
+## [v2.1.0-beta](https://github.com/devlooped/dotnet-stop/tree/v2.1.0-beta) (2026-06-15)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.1...v2.1.0-beta)
+
+:sparkles: Implemented enhancements:
+
+- Bundle stopr in CI any packages and fix Windows console shutdown detection [\#48](https://github.com/devlooped/dotnet-stop/pull/48) (@kzu)
+- Fix ConPTY TUI shutdown and split --debug from debugger attach. [\#45](https://github.com/devlooped/dotnet-stop/pull/45) (@kzu)
+- Add stopr helper to fix Windows multi-PID stopping. [\#44](https://github.com/devlooped/dotnet-stop/pull/44) (@kzu)
+- Add Windows GUI graceful shutdown via WM\_CLOSE. [\#43](https://github.com/devlooped/dotnet-stop/pull/43) (@kzu)
+
 ## [v2.0.1](https://github.com/devlooped/dotnet-stop/tree/v2.0.1) (2026-05-15)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.1-beta...v2.0.1)
