@@ -166,13 +166,22 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet, bool debug)
     if (debug)
         AnsiConsole.MarkupLine($"[grey]stopr exit code = {stoprExit}[/]");
 
-    if (stoprExit != 0)
+    if (!IsStoprSuccess(stoprExit))
     {
         if (debug)
             AnsiConsole.MarkupLine("[grey]Using GUI (WM_CLOSE) shutdown path[/]");
 
         if (!SendCloseToGuiProcess(process, debug))
         {
+            process.Refresh();
+            if (process.HasExited)
+            {
+                if (debug)
+                    AnsiConsole.MarkupLine("[grey]Target process already exited after stopr[/]");
+
+                return 0;
+            }
+
             if (!quiet)
                 AnsiConsole.MarkupLine($"[red]No closeable windows found for process {process.ProcessName}:{process.Id}[/]");
 
@@ -181,7 +190,10 @@ static int StopWindowsProcess(int id, int? timeout, bool quiet, bool debug)
     }
     else if (debug)
     {
-        AnsiConsole.MarkupLine("[grey]Using console (Ctrl+C) shutdown path via stopr[/]");
+        if (stoprExit == 0)
+            AnsiConsole.MarkupLine("[grey]Using console (Ctrl+C) shutdown path via stopr[/]");
+        else
+            AnsiConsole.MarkupLine("[grey]stopr posted Ctrl+C (exit code indicates signal was delivered)[/]");
     }
 
     if (timeout != null)
@@ -221,6 +233,10 @@ static int RunStopr(int pid, bool debug)
     }
 }
 
+// stopr may exit with STATUS_CONTROL_C_EXIT after successfully posting Ctrl+C.
+static bool IsStoprSuccess(int exitCode) =>
+    exitCode == 0 || unchecked((int)0xC000013A) == exitCode;
+
 static ProcessStartInfo CreateStoprStartInfo(int pid)
 {
     var dir = AppContext.BaseDirectory;
@@ -235,6 +251,9 @@ static ProcessStartInfo CreateStoprStartInfo(int pid)
     }
 
     var stoprDll = Path.Combine(dir, "stopr.dll");
+    if (!File.Exists(stoprDll))
+        throw new FileNotFoundException($"stopr helper was not found next to {dir}.", stoprDll);
+
     var host = Environment.ProcessPath ?? "dotnet";
     return new ProcessStartInfo(host, $"exec \"{stoprDll}\" {pid}")
     {

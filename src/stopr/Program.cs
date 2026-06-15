@@ -11,22 +11,21 @@ NativeMethods.FreeConsole();
 if (!TryAttachConsoleChain((uint)pid, out var attachedDirectly))
     return 1;
 
-NativeMethods.SetConsoleCtrlHandler(null, true);
+NativeMethods.SetConsoleCtrlHandler(IgnoreCtrlHandler, true);
 try
 {
-    var processGroupId = attachedDirectly ? 0u : (uint)pid;
-    if (!SendCtrlC(processGroupId))
+    if (!SendCtrlCToTarget(attachedDirectly, (uint)pid))
         return 3;
 
     Thread.Sleep(300);
 
-    SendCtrlC(processGroupId);
+    SendCtrlCToTarget(attachedDirectly, (uint)pid);
     return 0;
 }
 finally
 {
     NativeMethods.FreeConsole();
-    NativeMethods.SetConsoleCtrlHandler(null, false);
+    NativeMethods.SetConsoleCtrlHandler(IgnoreCtrlHandler, false);
 }
 
 static bool TryAttachConsoleChain(uint pid, out bool attachedDirectly)
@@ -79,6 +78,11 @@ static uint GetParentProcessId(uint pid)
 
 static bool SendCtrlC(uint processGroupId) =>
     NativeMethods.GenerateConsoleCtrlEvent(NativeMethods.CtrlCEvent, processGroupId);
+
+static bool SendCtrlCToTarget(bool attachedDirectly, uint pid) =>
+    attachedDirectly ? SendCtrlC(0) : SendCtrlC(pid) || SendCtrlC(0);
+
+static bool IgnoreCtrlHandler(uint ctrlType) => true;
 
 [DllImport("kernel32.dll", SetLastError = true)]
 static extern bool CloseHandle(nint hObject);
