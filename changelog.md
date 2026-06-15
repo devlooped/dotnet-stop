@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.1.0-rc](https://github.com/devlooped/dotnet-stop/tree/v2.1.0-rc) (2026-06-15)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.1.0-beta...v2.1.0-rc)
+
+:twisted_rightwards_arrows: Merged:
+
+- Fix RID tool packages by bundling stopr only in stop.any [\#49](https://github.com/devlooped/dotnet-stop/pull/49) (@kzu)
+
 ## [v2.1.0-beta](https://github.com/devlooped/dotnet-stop/tree/v2.1.0-beta) (2026-06-15)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.0.1...v2.1.0-beta)
