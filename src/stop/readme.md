@@ -24,7 +24,8 @@ Arguments:
 Options:
   -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
   -q, --quiet             Do not display any output.
-  -d, --debug             Debug the process stopping operation.
+      --attach            Attach a .NET debugger before stopping.
+  -d, --debug             Print diagnostic details about the stop operation.
 ```
 
 <!-- src/stop/help.md -->
