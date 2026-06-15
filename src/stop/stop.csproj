@@ -43,19 +43,30 @@
 
   <Target Name="BundleStoprForBuild"
           AfterTargets="Build"
+          BeforeTargets="_GetTfmSpecificContentForPackage"
           Condition="'$(DesignTimeBuild)' != 'true'">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\stopr\stopr.csproj"
              Targets="Build"
-             Properties="Configuration=$(Configuration)" />
+             Properties="Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier)" />
 
     <ItemGroup>
-      <_StoprBuildOutput Include="$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)\stopr.*" />
+      <_StoprBuildOutput Include="$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\stopr.*"
+                         Condition="'$(RuntimeIdentifier)' != ''" />
+      <_StoprBuildOutput Include="$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)\stopr.*"
+                         Condition="'$(RuntimeIdentifier)' == ''" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_StoprBuildOutput)"
           DestinationFolder="$(OutputPath)"
           SkipUnchangedFiles="true"
-          Condition="Exists('$(MSBuildThisFileDirectory)..\stopr\bin\$(Configuration)\$(TargetFramework)')" />
+          Condition="@(_StoprBuildOutput->Count()) != 0" />
+
+    <ItemGroup Condition="'$(PackAsTool)' == 'true' and '$(RuntimeIdentifier)' != ''">
+      <TfmSpecificPackageFile Include="$(OutputPath)stopr.deps.json" PackagePath="tools/$(TargetFramework)/any" />
+      <TfmSpecificPackageFile Include="$(OutputPath)stopr.dll" PackagePath="tools/$(TargetFramework)/any" />
+      <TfmSpecificPackageFile Include="$(OutputPath)stopr.runtimeconfig.json" PackagePath="tools/$(TargetFramework)/any" />
+      <TfmSpecificPackageFile Include="$(OutputPath)stopr.exe" PackagePath="tools/$(TargetFramework)/any" Condition="Exists('$(OutputPath)stopr.exe')" />
+    </ItemGroup>
   </Target>
 
   <Target Name="BundleStoprForPack"
