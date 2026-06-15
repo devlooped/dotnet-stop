@@ -2,8 +2,7 @@
   "profiles": {
     "stop": {
       "commandName": "Project",
-      "commandLineArgs": "28368"
-      //"commandLineArgs": "-?"
+      "commandLineArgs": "-?"
     }
   }
 }
