@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.1.0](https://github.com/devlooped/dotnet-stop/tree/v2.1.0) (2026-06-15)
+
+[Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.1.0-rc...v2.1.0)
+
+:twisted_rightwards_arrows: Merged:
+
+- Fix Unix graceful shutdown for WSL process groups [\#50](https://github.com/devlooped/dotnet-stop/pull/50) (@kzu)
+
 ## [v2.1.0-rc](https://github.com/devlooped/dotnet-stop/tree/v2.1.0-rc) (2026-06-15)
 
 [Full Changelog](https://github.com/devlooped/dotnet-stop/compare/v2.1.0-beta...v2.1.0-rc)
