@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using ConsoleAppFramework;
 using Devlooped;
 using Spectre.Console;
@@ -58,7 +59,7 @@ static int Stop([Argument] int? id = null, [HideDefaultValue] int? timeout = def
 static int StopProcess(int id, int? timeout, bool quiet, bool debug) =>
     Environment.OSVersion.Platform == PlatformID.Win32NT
         ? StopWindowsProcess(id, timeout, quiet, debug)
-        : StopUnixProcess(id, timeout, quiet);
+        : StopUnixProcess(id, timeout, quiet, debug);
 
 // Parses process IDs from stdin, supporting:
 //   - PowerShell Get-Process table format (detects "Id" column header + separator line)
@@ -106,7 +107,7 @@ static IEnumerable<int> ParsePids(string[] lines)
             yield return pid;
 }
 
-static int StopUnixProcess(int id, int? timeout, bool quiet)
+static int StopUnixProcess(int id, int? timeout, bool quiet, bool debug)
 {
     Process process;
     try
@@ -124,22 +125,138 @@ static int StopUnixProcess(int id, int? timeout, bool quiet)
     if (!quiet)
         AnsiConsole.MarkupLine($"[yellow]Shutting down {process.ProcessName}:{process.Id}...[/]");
 
-    Process.Start(new ProcessStartInfo("kill", "-s SIGINT " + process.Id) { UseShellExecute = true })?.WaitForExit();
-
-    if (timeout != null)
+    if (!SendUnixSigInt(process.Id, debug))
     {
-        if (process.WaitForExit((int)timeout))
-            return 0;
-
         if (!quiet)
-            AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.ProcessName}:{process.Id} to exit[/]");
+            AnsiConsole.MarkupLine($"[red]Failed to send SIGINT to process {process.ProcessName}:{process.Id}[/]");
 
         return -1;
     }
-    else
+
+    var deadline = timeout != null ? Environment.TickCount64 + timeout.Value : long.MaxValue;
+    while (Environment.TickCount64 < deadline)
     {
-        process.WaitForExit();
-        return 0;
+        process.Refresh();
+        if (process.HasExited)
+            return 0;
+
+        if (IsUnixStopComplete(process.Id))
+        {
+            if (debug)
+                AnsiConsole.MarkupLine("[grey]Target process group is stopped or has exited[/]");
+
+            return 0;
+        }
+
+        Thread.Sleep(50);
+    }
+
+    if (!quiet)
+        AnsiConsole.MarkupLine($"[red]Timed out waiting for process {process.ProcessName}:{process.Id} to exit[/]");
+
+    return -1;
+}
+
+static bool SendUnixSigInt(int pid, bool debug)
+{
+    var pgid = GetUnixProcessGroupId(pid);
+    var args = pgid > 0 ? $"-INT -{pgid}" : $"-s SIGINT {pid}";
+
+    if (debug)
+        AnsiConsole.MarkupLine($"[grey]kill {args}[/]");
+
+    using var kill = Process.Start(new ProcessStartInfo("kill", args)
+    {
+        UseShellExecute = false,
+        CreateNoWindow = true,
+    });
+
+    if (kill == null)
+        return false;
+
+    kill.WaitForExit();
+    return kill.ExitCode == 0;
+}
+
+static bool IsUnixStopComplete(int pid)
+{
+    if (!UnixProcessExists(pid))
+        return true;
+
+    var pgid = GetUnixProcessGroupId(pid);
+    if (pgid > 0 && IsUnixProcessGroupQuiesced(pgid))
+        return true;
+
+    return GetUnixProcessState(pid) is 'T' or 't' or 'Z';
+}
+
+static bool IsUnixProcessGroupQuiesced(int pgid)
+{
+    foreach (var procPid in EnumerateUnixProcessIds())
+    {
+        if (GetUnixProcessGroupId(procPid) != pgid)
+            continue;
+
+        if (GetUnixProcessState(procPid) is 'R' or 'S' or 'D' or 'I')
+            return false;
+    }
+
+    return true;
+}
+
+static IEnumerable<int> EnumerateUnixProcessIds()
+{
+    foreach (var dir in Directory.EnumerateDirectories("/proc"))
+    {
+        if (int.TryParse(Path.GetFileName(dir), out var pid))
+            yield return pid;
+    }
+}
+
+static bool UnixProcessExists(int pid) => Directory.Exists($"/proc/{pid}");
+
+static char? GetUnixProcessState(int pid)
+{
+    try
+    {
+        foreach (var line in File.ReadLines($"/proc/{pid}/status"))
+        {
+            if (!line.StartsWith("State:", StringComparison.Ordinal))
+                continue;
+
+            var state = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+            return state.Length > 1 && state[1].Length > 0 ? state[1][0] : null;
+        }
+    }
+    catch (IOException)
+    {
+    }
+    catch (UnauthorizedAccessException)
+    {
+    }
+
+    return null;
+}
+
+static int GetUnixProcessGroupId(int pid)
+{
+    try
+    {
+        var stat = File.ReadAllText($"/proc/{pid}/stat");
+        var index = stat.LastIndexOf(')');
+        if (index < 0)
+            return -1;
+
+        var fields = stat[(index + 2)..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return fields.Length > 2 && int.TryParse(fields[2], out var pgid) ? pgid : -1;
+    }
+    catch (IOException)
+    {
+        return -1;
+    }
+    catch (UnauthorizedAccessException)
+    {
+        return -1;
     }
 }
 
