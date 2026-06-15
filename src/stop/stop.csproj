@@ -61,7 +61,7 @@
           SkipUnchangedFiles="true"
           Condition="@(_StoprBuildOutput->Count()) != 0" />
 
-    <ItemGroup Condition="'$(PackAsTool)' == 'true' and '$(RuntimeIdentifier)' != ''">
+    <ItemGroup Condition="'$(PackAsTool)' == 'true' and '$(RuntimeIdentifier)' == 'any'">
       <TfmSpecificPackageFile Include="$(OutputPath)stopr.deps.json" PackagePath="tools/$(TargetFramework)/any" />
       <TfmSpecificPackageFile Include="$(OutputPath)stopr.dll" PackagePath="tools/$(TargetFramework)/any" />
       <TfmSpecificPackageFile Include="$(OutputPath)stopr.runtimeconfig.json" PackagePath="tools/$(TargetFramework)/any" />
