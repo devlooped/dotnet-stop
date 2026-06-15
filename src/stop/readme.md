@@ -1,4 +1,4 @@
-<!-- include ../readme.md#content -->
+<!-- include ../../readme.md#content -->
 <!-- #content -->
 A dotnet global tool that gracefully stops processes by sending them SIGINT (Ctrl+C) in a cross platform way.
 
@@ -54,7 +54,7 @@ Get-Process -Name foo | Select-Object -ExpandProperty Id | dnx stop
 ```
 
 <!-- #content -->
-<!-- ../readme.md#content -->
+<!-- ../../readme.md#content -->
 <!-- include https://github.com/devlooped/sponsors/raw/main/footer.md -->
 # Sponsors 
 
