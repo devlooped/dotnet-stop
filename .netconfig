@@ -59,8 +59,8 @@
 	weak
 [file ".gitignore"]
 	url = https://github.com/devlooped/oss/blob/main/.gitignore
-	sha = c1d29fbde52b1505288e3392e7f5fdcb2299f322
-	etag = f502a2be3b4155fd86675ef45a4364e598979738128a612deb7db59074f93a51
+	sha = ff61659751374b95c7a8a0477c908a8119f756f0
+	etag = e5865f083db45081a7b4eaa518018971b34e6ef93f917ac510dea96d27f792b3
 	weak
 [file "Directory.Build.rsp"]
 	url = https://github.com/devlooped/oss/blob/main/Directory.Build.rsp
