@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="ConsoleAppFramework" Version="5.7.13" PrivateAssets="all" />
-    <PackageReference Include="Spectre.Console" Version="0.57.0" />
+    <PackageReference Include="Spectre.Console" Version="0.57.2" />
   </ItemGroup>
 
   <ItemGroup>
