@@ -69,9 +69,11 @@ jobs:
         uses: devlooped/actions-dotnet-env@v1
 
       - name: 🙏 build
+        # The 'any' build comes first: packing the solution packs stop.any from its output.
         run: |
-          dotnet build -m:1 -bl:build.binlog -p:RuntimeIdentifiers=any
+          dotnet restore -bl:restore.binlog -p:RuntimeIdentifiers=any
           dotnet build src/stop/stop.csproj -bl:runtime.binlog -p:RuntimeIdentifiers=any -r any
+          dotnet build -m:1 -bl:build.binlog -p:RuntimeIdentifiers=any
 
       - name: 🧪 test
         shell: pwsh
