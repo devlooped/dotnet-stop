@@ -13,6 +13,7 @@ The stop logic in `src/stop/Program.cs` follows ndx's `ProcessStop`/`ChildProces
 
 - Windows: `WM_CLOSE` first, then Ctrl+C through the `stopr` helper, which attaches to the target's console. A GUI app started from a shell has no console, and `stopr` would otherwise attach to an ancestor's console and report a Ctrl+C the app never gets. Console windows (`ConsoleWindowClass`, `PseudoConsoleWindow`) report the console app as owner and are never sent `WM_CLOSE`, which would close the console instead of sending Ctrl+C.
 - NeoAstra apps: when a `NeoAstra.Window` is present, only unowned top-level frames of that class get `WM_CLOSE`; the message on its other windows destroys them and leaves an app that cannot exit.
-- Unix: libc `kill()` with SIGINT to the target's process group, or to the target alone when that group is our own. The `kill` tool is not used: procps-ng takes `-INT -<pgid>` without signaling and exits with 0.
+- Unix: libc `kill()` with SIGINT to the target's process group (libc `getpgid()`), or to the target alone when that group is our own. The `kill` tool is not used: procps-ng takes `-INT -<pgid>` without signaling and exits with 0.
+- The wait ends early on stopped/zombie state or a quiesced process group only on Linux, where `/proc` gives them; on macOS it waits for `Process.HasExited`.
 - The descendants of the target (`ProcessTree`) are recorded before the signal and while waiting, since they are reparented once it exits, then waited for within the same timeout.
 - Killing is opt-in (`--kill`), after the timeout; ndx always kills because it must restart the tool.
