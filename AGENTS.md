@@ -4,7 +4,7 @@
 
 - `src/stop/stop.csproj` targets `net10.0` only.
 - Hybrid Native AOT/CoreCLR tool packaging is opt-in via `HybridToolPackage=true`.
-- Keep `.github/workflows/build.yml` on the default non-AOT package path for fast CI and dogfooding.
+- Keep `.github/workflows/build.yml` on the default non-AOT package path for fast CI and dogfooding. It builds with `RuntimeIdentifiers=any`, for which `stop.csproj` turns AOT off: the .NET 11 SDK drops `any` from an AOT tool's RID packages and, with none left, fails with a circular dependency on `_CreateRIDSpecificToolPackages`. It builds `-r any` before the solution, since packing the solution packs `stop.any` from that build's output.
 - In `.github/workflows/publish.yml`, publish RID-specific packages and the `any` fallback before publishing the top-level pointer package.
 
 ## Stopping

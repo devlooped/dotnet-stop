@@ -27,7 +27,10 @@
     <StripSymbols>true</StripSymbols>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'any'">
+  <!-- Building only for 'any' (CI) is not AOT either: an AOT tool packs only RIDs the host can
+       compile natively, so the SDK drops 'any' from the RID-specific packages and, with none left,
+       re-packs the project with an empty RuntimeIdentifier, which fails as a circular dependency. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'any' or '$(RuntimeIdentifiers)' == 'any'">
     <PublishAot>false</PublishAot>
   </PropertyGroup>
 
