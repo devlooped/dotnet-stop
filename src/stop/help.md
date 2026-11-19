@@ -8,6 +8,7 @@ Arguments:
 
 Options:
   -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
+  -k, --kill              Kill the process and the processes it started if they do not exit within the timeout.
   -q, --quiet             Do not display any output.
   -d, --debug             Print diagnostic details about the stop operation.
   --attach                Attach a .NET debugger before stopping.

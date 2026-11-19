@@ -13,7 +13,7 @@ PowerShell's `Stop-Process` (and the underlying `TerminateProcess` on Windows / 
 `dnx stop` sends **SIGINT** instead — the same signal as pressing Ctrl+C — which lets the process shut down on its own terms. On Windows this is non-trivial to do programmatically; for console apps it requires detaching from the current console, attaching to the target process's console group, and calling `GenerateConsoleCtrlEvent`. For GUI apps (including UWP apps like Calculator), it sends `WM_CLOSE` to the app's windows — the same as clicking the close button. This tool handles all of that transparently, cross-platform.
 
 ``` bash
-dnx stop [<processId>] [--timeout <milliseconds>] [--quiet]
+dnx stop [<processId>] [--timeout <milliseconds>] [--kill] [--quiet]
 ```
 
 <!-- include src/stop/help.md -->
@@ -27,6 +27,7 @@ Arguments:
 
 Options:
   -t, --timeout <int?>    Optional timeout in milliseconds to wait for the process to exit.
+  -k, --kill              Kill the process and the processes it started if they do not exit within the timeout.
   -q, --quiet             Do not display any output.
   -d, --debug             Print diagnostic details about the stop operation.
   --attach                Attach a .NET debugger before stopping.
@@ -34,9 +35,13 @@ Options:
 
 <!-- src/stop/help.md -->
 
-If no timeout is provided, the tool will wait indefinitely for the target process to exit.
-Otherwise, the process will exit with a non-zero exit code if the target process didn't 
-exit within the specified timeout time.
+The tool also waits for the processes the target started, which got the same Ctrl+C or 
+SIGINT and may still be shutting down after the target exits.
+
+If no timeout is provided, the tool will wait indefinitely for the target process and the 
+processes it started to exit. Otherwise, the tool will exit with a non-zero exit code if they 
+didn't exit within the specified timeout time, unless `--kill` is given: then whatever is 
+still running when the timeout expires is killed, along with its process tree.
 
 ## Piping from PowerShell
 
