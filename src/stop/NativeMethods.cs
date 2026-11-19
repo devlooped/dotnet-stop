@@ -51,6 +51,9 @@ static class NativeMethods
     [DllImport("libc", EntryPoint = "kill", SetLastError = true)]
     public static extern int Kill(int pid, int sig);
 
+    [DllImport("libc", EntryPoint = "getpgid", SetLastError = true)]
+    public static extern int GetPgid(int pid);
+
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct ProcessEntry32
     {

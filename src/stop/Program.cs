@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -143,7 +143,7 @@ static bool IsTargetStopped(Process process, bool debug)
     if (IsStopped(process))
         return true;
 
-    if (OperatingSystem.IsWindows() || !IsUnixStopComplete(process.Id))
+    if (!OperatingSystem.IsLinux() || !IsLinuxStopComplete(process.Id))
         return false;
 
     if (debug)
@@ -166,7 +166,7 @@ static bool IsStopped(Process process)
         return true;
     }
 
-    return !OperatingSystem.IsWindows() && GetUnixProcessState(process.Id) is 'T' or 't' or 'Z';
+    return OperatingSystem.IsLinux() && GetLinuxProcessState(process.Id) is 'T' or 't' or 'Z';
 }
 
 // Processes the target started keep stopping after a graceful exit (they got the same
@@ -327,44 +327,34 @@ static bool SendUnixSigInt(int pid, bool debug)
     return false;
 }
 
-static bool IsUnixStopComplete(int pid)
+// Linux only, through /proc: elsewhere (macOS) only Process.HasExited ends the wait for the target.
+static bool IsLinuxStopComplete(int pid)
 {
-    if (!UnixProcessExists(pid))
+    if (!Directory.Exists($"/proc/{pid}"))
         return true;
 
     var pgid = GetUnixProcessGroupId(pid);
-    if (pgid > 0 && IsUnixProcessGroupQuiesced(pgid))
+    if (pgid > 0 && IsLinuxProcessGroupQuiesced(pgid))
         return true;
 
-    return GetUnixProcessState(pid) is 'T' or 't' or 'Z';
+    return GetLinuxProcessState(pid) is 'T' or 't' or 'Z';
 }
 
-static bool IsUnixProcessGroupQuiesced(int pgid)
+static bool IsLinuxProcessGroupQuiesced(int pgid)
 {
-    foreach (var procPid in EnumerateUnixProcessIds())
+    foreach (var dir in Directory.EnumerateDirectories("/proc"))
     {
-        if (GetUnixProcessGroupId(procPid) != pgid)
+        if (!int.TryParse(Path.GetFileName(dir), out var procPid) || GetUnixProcessGroupId(procPid) != pgid)
             continue;
 
-        if (GetUnixProcessState(procPid) is 'R' or 'S' or 'D' or 'I')
+        if (GetLinuxProcessState(procPid) is 'R' or 'S' or 'D' or 'I')
             return false;
     }
 
     return true;
 }
 
-static IEnumerable<int> EnumerateUnixProcessIds()
-{
-    foreach (var dir in Directory.EnumerateDirectories("/proc"))
-    {
-        if (int.TryParse(Path.GetFileName(dir), out var pid))
-            yield return pid;
-    }
-}
-
-static bool UnixProcessExists(int pid) => Directory.Exists($"/proc/{pid}");
-
-static char? GetUnixProcessState(int pid)
+static char? GetLinuxProcessState(int pid)
 {
     try
     {
@@ -387,27 +377,8 @@ static char? GetUnixProcessState(int pid)
     return null;
 }
 
-static int GetUnixProcessGroupId(int pid)
-{
-    try
-    {
-        var stat = File.ReadAllText($"/proc/{pid}/stat");
-        var index = stat.LastIndexOf(')');
-        if (index < 0)
-            return -1;
-
-        var fields = stat[(index + 2)..].Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return fields.Length > 2 && int.TryParse(fields[2], out var pgid) ? pgid : -1;
-    }
-    catch (IOException)
-    {
-        return -1;
-    }
-    catch (UnauthorizedAccessException)
-    {
-        return -1;
-    }
-}
+// -1 when the process is gone.
+static int GetUnixProcessGroupId(int pid) => NativeMethods.GetPgid(pid);
 
 // WM_CLOSE first, then Ctrl+C, as ndx does: a GUI app has no console of its own, and stopr
 // would otherwise attach to the console of an ancestor and report a Ctrl+C the app never gets.
